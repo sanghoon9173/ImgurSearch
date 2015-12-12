@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">ImgurSearch</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+
+    <string name="imgur_search_hint">Please enter search terms</string>
+    <string name="imgur_search_button_label">Find</string>
+    <string name="img_content_description">Image</string>
+</resources>
