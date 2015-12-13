@@ -22,7 +22,7 @@ import com.example.sanghoonlee.imgursearch.Controller.ImgurClient;
 import com.example.sanghoonlee.imgursearch.Controller.Listener.RecyclerItemClickListener;
 import com.example.sanghoonlee.imgursearch.Model.Imgur.ImageData;
 import com.example.sanghoonlee.imgursearch.R;
-import com.example.sanghoonlee.imgursearch.Util.PersistenceManager;
+import com.example.sanghoonlee.imgursearch.Controller.PersistenceManager;
 import com.example.sanghoonlee.imgursearch.Util.Util;
 
 import java.util.ArrayList;
@@ -126,6 +126,16 @@ public class ImageSearchFragment extends Fragment {
             }
         });
 
+        mSearchInput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(hasFocus) {
+                    mHistoryListView.setVisibility(View.VISIBLE);
+                } else {
+                    mHistoryListView.setVisibility(View.GONE);
+                }
+            }
+        });
     }
 
     private void initSpinnerOp(){
@@ -133,12 +143,14 @@ public class ImageSearchFragment extends Fragment {
         mHistoryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //set the currently selected search term to the search input field
                 String selectedString = mHistoryAdapter.getItem(position).toString();
                 mSearchInput.setText(selectedString);
                 mSearchInput.setSelection(selectedString.length());
             }
         });
-        mHistoryAdapter = new SearchHistoryAdapter(getActivity(), new ArrayList<String>(), mHistoryListView);
+        mHistoryAdapter = new SearchHistoryAdapter(getActivity(),
+                mPersistenceManager.getSearchHistory(), mHistoryListView);
         mHistoryListView.setAdapter(mHistoryAdapter);
     }
 
@@ -157,6 +169,7 @@ public class ImageSearchFragment extends Fragment {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
+                //fetch more data when scrolling near the end
                 int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
                 int lastVisibleItem = ((GridLayoutManager) mRecyclerView.getLayoutManager())
                         .findLastVisibleItemPosition();
@@ -178,11 +191,11 @@ public class ImageSearchFragment extends Fragment {
     }
 
     private void performSearch(View v) {
-        mCurrentSearchString = mSearchInput.getText().toString();
         Util.hideKeyboardIfOpen(v, getActivity());
+        mCurrentSearchString = mSearchInput.getText().toString();
         mImgur.searchImage(mCurrentSearchString);
-        mHistoryListView.setVisibility(View.GONE);
         mPersistenceManager.addSearchHistory(mCurrentSearchString);
+        mSearchInput.clearFocus();
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.example.sanghoonlee.imgursearch.Util;
+package com.example.sanghoonlee.imgursearch.Controller;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -80,7 +80,7 @@ public class PersistenceManager extends SQLiteOpenHelper {
         query = query.toLowerCase().trim();
         List<String> list = new ArrayList<>();
         if(query.isEmpty()) {
-            return list;
+            return getSearchHistory();
         }
         String[] queryStrings = query.split(" ");
         StringBuffer sb = new StringBuffer("SELECT  ").append(COLUMN_NAME).append(" FROM ")
