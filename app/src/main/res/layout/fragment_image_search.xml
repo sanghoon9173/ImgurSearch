@@ -21,21 +21,22 @@
             android:ems="10"
             android:hint="@string/imgur_search_hint"
             android:inputType="text"
-            android:imeOptions="actionSearch">
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:background="@null"
+            android:imeOptions="actionSearch" >
         </EditText>
-        <Button
-            android:id="@+id/search_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/imgur_search_button_label"/>
     </LinearLayout>
     <ListView
         android:id="@+id/search_history"
         android:layout_width="fill_parent"
+        android:divider="@null"
+        android:dividerHeight="0dp"
         android:layout_height="wrap_content"
         android:visibility="gone">
     </ListView>
-
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/search_result"

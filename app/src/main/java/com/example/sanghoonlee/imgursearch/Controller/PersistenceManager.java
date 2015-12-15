@@ -108,6 +108,9 @@ public class PersistenceManager extends SQLiteOpenHelper {
 
     public boolean containsHistory(String query){
         query = query.toLowerCase().trim();
+        if(query.isEmpty()) {
+            return true;
+        }
         String selectQuery = "SELECT  "+COLUMN_NAME+" FROM " +
                 TABLE_NAME+ " WHERE "+COLUMN_NAME+ " = '"+query+"'";
         SQLiteDatabase db = this.getReadableDatabase();

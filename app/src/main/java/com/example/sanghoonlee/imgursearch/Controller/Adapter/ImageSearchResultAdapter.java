@@ -2,6 +2,7 @@ package com.example.sanghoonlee.imgursearch.Controller.Adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 
 import com.example.sanghoonlee.imgursearch.Model.Imgur.ImageData;
 import com.example.sanghoonlee.imgursearch.R;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -19,6 +21,12 @@ import java.util.List;
  */
 
 public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchResultAdapter.ViewHolder> {
+
+    public static final String TAG  = "SearchResultAdapter";
+
+    //used to resume, pause, cancel picasso request
+    public static final String IMAGE_RESULT_TAG = "ImageResultTag";
+
     private List<ImageData> mImageDatas;
     private Context mContext;
 
@@ -56,15 +64,21 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchRe
         ImageData imageData = mImageDatas.get(position);
         Picasso.with(mContext)
                 .load(imageData.url)
-                .placeholder(mContext.getResources().getDrawable(R.mipmap.ic_launcher))
-                .resize(180, 180)
+                .fit()
+                .tag(IMAGE_RESULT_TAG)
                 .centerCrop()
-                .into(viewHolder.mThumbnail);
-    }
+                .into(viewHolder.mThumbnail, new Callback() {
+                    @Override
+                    public void onSuccess() {
 
-    @Override
-    public void onViewRecycled(final ViewHolder holder) {
-        holder.cleanup();
+                    }
+
+                    @Override
+                    public void onError() {
+                        Log.i(TAG,"picasso image loading failed");
+                        //may want to do some UI work to show error
+                    }
+                });
     }
 
     @Override
@@ -77,12 +91,6 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchRe
         public ViewHolder(View parent) {
             super(parent);
             mThumbnail = (ImageView) parent.findViewById(R.id.img_thumbnail);
-        }
-
-        public void cleanup() {
-            Picasso.with(mThumbnail.getContext())
-                    .cancelRequest(mThumbnail);
-            mThumbnail.setImageDrawable(null);
         }
     }
 }

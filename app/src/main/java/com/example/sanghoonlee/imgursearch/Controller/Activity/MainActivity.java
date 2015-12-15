@@ -2,7 +2,6 @@ package com.example.sanghoonlee.imgursearch.Controller.Activity;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -17,6 +16,7 @@ public class MainActivity extends AppCompatActivity implements
     private ImageSearchFragment mImageSearchFragment;
     private FragmentManager mFragmentManager;
     private String mCurrentFragmentTag;
+    private ImageFragment mImageFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onResume(){
         super.onResume();
-
     }
 
     @Override
@@ -48,21 +47,17 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onImageSelected(ImageData data) {
-        Intent intent = new Intent(this, MainImageActivity.class);
-        intent.putExtra(MainImageActivity.IMAGE_URL_EXTRA, data.url);
-        startActivity(intent);
-//        mCurrentFragmentTag = ImageFragment.TAG;
-//        mImageFragment = ImageFragment.newInstance();
-//        mImageFragment.setImageData(data);
-//        FragmentTransaction transaction = mFragmentManager.beginTransaction();
-//        transaction.add(R.id.main_container, mImageFragment, ImageFragment.TAG);
-//        transaction.addToBackStack(ImageFragment.TAG);
-//        transaction.commit();
+        mCurrentFragmentTag = ImageFragment.TAG;
+        mImageFragment = ImageFragment.newInstance();
+        mImageFragment.setImageData(data);
+        FragmentTransaction transaction = mFragmentManager.beginTransaction();
+        transaction.add(R.id.main_container, mImageFragment, ImageFragment.TAG);
+        transaction.addToBackStack(ImageFragment.TAG);
+        transaction.commit();
     }
 
     public void popFragment() {
-        FragmentManager fm = getFragmentManager();
-        fm.popBackStack();
+        mFragmentManager.popBackStack();
     }
 
     @Override
@@ -70,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements
         switch(mCurrentFragmentTag) {
             case ImageFragment.TAG:
                 popFragment();
+                mCurrentFragmentTag = ImageSearchFragment.TAG;
                 break;
             case ImageSearchFragment.TAG:
             default:

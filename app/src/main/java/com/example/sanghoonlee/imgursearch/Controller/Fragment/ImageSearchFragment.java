@@ -8,13 +8,16 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.example.sanghoonlee.imgursearch.Controller.Adapter.ImageSearchResultAdapter;
 import com.example.sanghoonlee.imgursearch.Controller.Adapter.SearchHistoryAdapter;
@@ -24,6 +27,7 @@ import com.example.sanghoonlee.imgursearch.Model.Imgur.ImageData;
 import com.example.sanghoonlee.imgursearch.R;
 import com.example.sanghoonlee.imgursearch.Controller.PersistenceManager;
 import com.example.sanghoonlee.imgursearch.Util.Util;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -32,7 +36,6 @@ public class ImageSearchFragment extends Fragment {
     public static final String TAG = "ImageSearchFragment";
 
     private EditText        mSearchInput;
-    private Button          mSearchButton;
     private RecyclerView    mRecyclerView;
     private ListView        mHistoryListView;
 
@@ -43,6 +46,7 @@ public class ImageSearchFragment extends Fragment {
     private OnImageItemSelectedListener mImageSelectedCallBack;
     private SearchHistoryAdapter mHistoryAdapter;
     private PersistenceManager mPersistenceManager;
+    private Picasso         mPicasso;
 
 
     public ImageSearchFragment() {
@@ -57,32 +61,38 @@ public class ImageSearchFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mPicasso = Picasso.with(getActivity());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mLayout = inflater.inflate(R.layout.fragment_image_search, container, false);
+        initView();
+        initOp();
         return mLayout;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        initView();
-        initOp();
+        mPicasso.resumeTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        //stop loading the image
-        mRecyclerView.setAdapter(null);
+        mPicasso.pauseTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mPicasso.cancelTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
     }
 
     private void initView() {
         mSearchInput = (EditText)mLayout.findViewById(R.id.search_input);
-        mSearchButton = (Button) mLayout.findViewById(R.id.search_button);
         mHistoryListView = (ListView) mLayout.findViewById(R.id.search_history);
         mRecyclerView = (RecyclerView) mLayout.findViewById(R.id.search_result);
     }
@@ -99,14 +109,6 @@ public class ImageSearchFragment extends Fragment {
     }
 
     private void initSearchAreaOp() {
-        //listen for buttom click for search
-        mSearchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                performSearch(v);
-            }
-        });
-
         //add text watcher for filtering spinner
         mSearchInput.addTextChangedListener(new TextWatcher() {
             private String queryString;
@@ -123,6 +125,18 @@ public class ImageSearchFragment extends Fragment {
             public void afterTextChanged(Editable s) {
                 queryString = s.toString();
                 mHistoryAdapter.refreshHistory(mPersistenceManager.getSearchHistory(queryString));
+            }
+        });
+
+        //add action listener for search soft key press
+        mSearchInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    performSearch(v);
+                    return true;
+                }
+                return false;
             }
         });
 
@@ -164,11 +178,23 @@ public class ImageSearchFragment extends Fragment {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
+
+                //TODO: cancel request when user scrolls
+                //*************************************
+                if (newState == RecyclerView.SCROLL_STATE_IDLE ||
+                        newState == RecyclerView.SCROLL_STATE_DRAGGING||
+                        newState == RecyclerView.SCROLL_STATE_SETTLING) {
+
+                    mPicasso.resumeTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
+                } else {
+                    mPicasso.cancelTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
+                }
             }
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
+
                 //fetch more data when scrolling near the end
                 int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
                 int lastVisibleItem = ((GridLayoutManager) mRecyclerView.getLayoutManager())
@@ -211,6 +237,7 @@ public class ImageSearchFragment extends Fragment {
                     + " must implement OnHeadlineSelectedListener");
         }
     }
+
 
     @Override
     public void onDetach() {

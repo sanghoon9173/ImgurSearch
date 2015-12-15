@@ -23,6 +23,7 @@ public class MainImageActivity extends AppCompatActivity {
         Picasso.with(this.getApplicationContext())
                 .load(url)
                 .noPlaceholder()
+                .priority(Picasso.Priority.HIGH)
                 .fit()
                 .into(mMainImage);
     }
