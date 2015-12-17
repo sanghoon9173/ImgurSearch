@@ -10,6 +10,7 @@ import android.widget.ImageView;
 
 import com.example.sanghoonlee.imgursearch.Model.Imgur.ImageData;
 import com.example.sanghoonlee.imgursearch.R;
+import com.example.sanghoonlee.imgursearch.View.SquareImageView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -87,10 +88,10 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchRe
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public ImageView mThumbnail;
+        public SquareImageView mThumbnail;
         public ViewHolder(View parent) {
             super(parent);
-            mThumbnail = (ImageView) parent.findViewById(R.id.img_thumbnail);
+            mThumbnail = (SquareImageView) parent.findViewById(R.id.img_thumbnail);
         }
     }
 }

@@ -27,6 +27,8 @@ import com.example.sanghoonlee.imgursearch.Model.Imgur.ImageData;
 import com.example.sanghoonlee.imgursearch.R;
 import com.example.sanghoonlee.imgursearch.Controller.PersistenceManager;
 import com.example.sanghoonlee.imgursearch.Util.Util;
+import com.example.sanghoonlee.imgursearch.View.AutofitRecyclerView;
+import com.example.sanghoonlee.imgursearch.View.MarginDecoration;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ public class ImageSearchFragment extends Fragment {
     public static final String TAG = "ImageSearchFragment";
 
     private EditText        mSearchInput;
-    private RecyclerView    mRecyclerView;
+    private AutofitRecyclerView mRecyclerView;
     private ListView        mHistoryListView;
 
     private ImgurClient     mImgur;
@@ -94,7 +96,7 @@ public class ImageSearchFragment extends Fragment {
     private void initView() {
         mSearchInput = (EditText)mLayout.findViewById(R.id.search_input);
         mHistoryListView = (ListView) mLayout.findViewById(R.id.search_history);
-        mRecyclerView = (RecyclerView) mLayout.findViewById(R.id.search_result);
+        mRecyclerView = (AutofitRecyclerView) mLayout.findViewById(R.id.search_result);
     }
 
     private void initOp() {
@@ -169,10 +171,12 @@ public class ImageSearchFragment extends Fragment {
     }
 
     public void initRecyclerViewOp() {
-        mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+       // mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.setHasFixedSize(true);
         mAdapter = new ImageSearchResultAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.addItemDecoration(new MarginDecoration(getActivity()));
         //listen for scroll event to load more images
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
