@@ -21,7 +21,8 @@ import java.util.List;
  * Created by sanghoonlee on 2015-12-10.
  */
 
-public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchResultAdapter.ViewHolder> {
+public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchResultAdapter.ViewHolder>
+                                                                    implements ImgurClientAdapter{
 
     public static final String TAG  = "SearchResultAdapter";
 
@@ -43,16 +44,17 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchRe
         return viewHolder;
     }
 
+    @Override
     public synchronized void addImageData(List<ImageData> models) {
         mImageDatas.addAll(models);
         notifyDataSetChanged();
     }
 
+    @Override
     public synchronized void resetImageData(List<ImageData> models) {
         mImageDatas.clear();
         mImageDatas.addAll(models);
         notifyDataSetChanged();
-
     }
 
     public ImageData getItemAt(int position) {

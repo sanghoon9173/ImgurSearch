@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -23,15 +22,13 @@ import com.example.sanghoonlee.imgursearch.Controller.Adapter.ImageSearchResultA
 import com.example.sanghoonlee.imgursearch.Controller.Adapter.SearchHistoryAdapter;
 import com.example.sanghoonlee.imgursearch.Controller.ImgurClient;
 import com.example.sanghoonlee.imgursearch.Controller.Listener.RecyclerItemClickListener;
+import com.example.sanghoonlee.imgursearch.Controller.Storage.SearchHistoryDBAdapter;
 import com.example.sanghoonlee.imgursearch.Model.Imgur.ImageData;
 import com.example.sanghoonlee.imgursearch.R;
-import com.example.sanghoonlee.imgursearch.Controller.PersistenceManager;
 import com.example.sanghoonlee.imgursearch.Util.Util;
 import com.example.sanghoonlee.imgursearch.View.AutofitRecyclerView;
 import com.example.sanghoonlee.imgursearch.View.MarginDecoration;
 import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
 
 public class ImageSearchFragment extends Fragment {
 
@@ -46,8 +43,9 @@ public class ImageSearchFragment extends Fragment {
     private ImageSearchResultAdapter mAdapter;
     private String          mCurrentSearchString;
     private OnImageItemSelectedListener mImageSelectedCallBack;
+    private RecyclerItemClickListener mImageClickListener;
     private SearchHistoryAdapter mHistoryAdapter;
-    private PersistenceManager mPersistenceManager;
+    private SearchHistoryDBAdapter mHistoryDBAdapter;
     private Picasso         mPicasso;
 
 
@@ -56,14 +54,19 @@ public class ImageSearchFragment extends Fragment {
     }
 
     public static ImageSearchFragment newInstance() {
-        ImageSearchFragment fragment = new ImageSearchFragment();
-        return fragment;
+        return new ImageSearchFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //create picasso instance
         mPicasso = Picasso.with(getActivity());
+        //create db manager
+        mHistoryDBAdapter = new SearchHistoryDBAdapter(getActivity());
+        mHistoryDBAdapter.open();
+        //create imgur client
+        mImgur = new ImgurClient(getActivity());
     }
 
     @Override
@@ -88,26 +91,27 @@ public class ImageSearchFragment extends Fragment {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mHistoryDBAdapter.close();
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         mPicasso.cancelTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
     }
 
     private void initView() {
-        mSearchInput = (EditText)mLayout.findViewById(R.id.search_input);
-        mHistoryListView = (ListView) mLayout.findViewById(R.id.search_history);
-        mRecyclerView = (AutofitRecyclerView) mLayout.findViewById(R.id.search_result);
+        mSearchInput        = (EditText)mLayout.findViewById(R.id.search_input);
+        mHistoryListView    = (ListView) mLayout.findViewById(R.id.search_history);
+        mRecyclerView       = (AutofitRecyclerView) mLayout.findViewById(R.id.search_result);
     }
 
     private void initOp() {
-        //init all the recycler view related operations
         initRecyclerViewOp();
-        //createimgur client
-        mImgur = new ImgurClient(getActivity(), mAdapter);
+        initHistoryListOp();
         initSearchAreaOp();
-        //PersistenceManager for reading and writing search history
-        mPersistenceManager = new PersistenceManager(getActivity().getApplicationContext());
-        initSpinnerOp();
     }
 
     private void initSearchAreaOp() {
@@ -126,7 +130,7 @@ public class ImageSearchFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 queryString = s.toString();
-                mHistoryAdapter.refreshHistory(mPersistenceManager.getSearchHistory(queryString));
+                mHistoryAdapter.refreshHistory(mHistoryDBAdapter.getSearchHistory(queryString));
             }
         });
 
@@ -154,7 +158,7 @@ public class ImageSearchFragment extends Fragment {
         });
     }
 
-    private void initSpinnerOp(){
+    private void initHistoryListOp(){
         //set item selected event for search history
         mHistoryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -166,16 +170,16 @@ public class ImageSearchFragment extends Fragment {
             }
         });
         mHistoryAdapter = new SearchHistoryAdapter(getActivity(),
-                mPersistenceManager.getSearchHistory(), mHistoryListView);
+                mHistoryDBAdapter.getSearchHistory(), mHistoryListView);
         mHistoryListView.setAdapter(mHistoryAdapter);
     }
 
     public void initRecyclerViewOp() {
-       // mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setHasFixedSize(true);
         mAdapter = new ImageSearchResultAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
+        mImgur.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(new MarginDecoration(getActivity()));
         //listen for scroll event to load more images
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -186,7 +190,7 @@ public class ImageSearchFragment extends Fragment {
                 //TODO: cancel request when user scrolls
                 //*************************************
                 if (newState == RecyclerView.SCROLL_STATE_IDLE ||
-                        newState == RecyclerView.SCROLL_STATE_DRAGGING||
+                        newState == RecyclerView.SCROLL_STATE_DRAGGING ||
                         newState == RecyclerView.SCROLL_STATE_SETTLING) {
 
                     mPicasso.resumeTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
@@ -203,28 +207,30 @@ public class ImageSearchFragment extends Fragment {
                 int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
                 int lastVisibleItem = ((GridLayoutManager) mRecyclerView.getLayoutManager())
                         .findLastVisibleItemPosition();
-                if (!mImgur.isLoading && totalItemCount <= (lastVisibleItem + 10)) {
+                if (!mImgur.mIsLoading && totalItemCount <= (lastVisibleItem + 10)) {
                     mImgur.searchImage(mCurrentSearchString);
                 }
             }
         });
 
         //set on item click listener
-        mRecyclerView.addOnItemTouchListener(
-                new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
-                        mImageSelectedCallBack.onImageSelected(mAdapter.getItemAt(position));
-                    }
-                })
-        );
+        mImageClickListener =   new RecyclerItemClickListener(
+                                    getActivity(),
+                                    new RecyclerItemClickListener.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(View view, int position) {
+                                mImageSelectedCallBack.onImageSelected(mAdapter.getItemAt(position));
+                            }
+                         });
+        mRecyclerView.addOnItemTouchListener(mImageClickListener);
+
     }
 
     private void performSearch(View v) {
         Util.hideKeyboardIfOpen(v, getActivity());
         mCurrentSearchString = mSearchInput.getText().toString();
         mImgur.searchImage(mCurrentSearchString);
-        mPersistenceManager.addSearchHistory(mCurrentSearchString);
+        mHistoryDBAdapter.addSearchHistory(mCurrentSearchString);
         mSearchInput.clearFocus();
     }
 
