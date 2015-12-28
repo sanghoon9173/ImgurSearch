@@ -37,8 +37,16 @@
         android:padding="8dp"
         android:columnWidth="150dp"
         android:rowHeight = "150dp"
-        android:background="@color/colorAccent"
+        android:background="@color/colorLightGrey"
         android:clipToPadding="false"/>
+
+    <TextView
+        android:id="@+id/no_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:text="@string/imgur_no_matching_result"/>
 
     <ListView
         android:id="@+id/search_history"

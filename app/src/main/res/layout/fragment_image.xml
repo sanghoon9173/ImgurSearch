@@ -19,6 +19,5 @@
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
             android:contentDescription="Image" />
-
     </LinearLayout>
 </ScrollView>

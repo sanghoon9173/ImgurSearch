@@ -6,4 +6,7 @@
     <string name="imgur_search_hint">Search Imgur</string>
     <string name="imgur_search_button_label">Find</string>
     <string name="img_content_description">Image</string>
+    <string name="imgur_no_matching_result">No matching result</string>
+    <string name="imgur_no_more_images">No more images to load</string>
+
 </resources>

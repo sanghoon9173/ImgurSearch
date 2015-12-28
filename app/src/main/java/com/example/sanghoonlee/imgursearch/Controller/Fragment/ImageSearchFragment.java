@@ -17,10 +17,12 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.sanghoonlee.imgursearch.Controller.Adapter.ImageSearchResultAdapter;
 import com.example.sanghoonlee.imgursearch.Controller.Adapter.SearchHistoryAdapter;
 import com.example.sanghoonlee.imgursearch.Controller.ImgurClient;
+import com.example.sanghoonlee.imgursearch.Controller.ImgurSearchable;
 import com.example.sanghoonlee.imgursearch.Controller.Listener.RecyclerItemClickListener;
 import com.example.sanghoonlee.imgursearch.Controller.Storage.SearchHistoryDBAdapter;
 import com.example.sanghoonlee.imgursearch.Model.Imgur.ImageData;
@@ -29,13 +31,16 @@ import com.example.sanghoonlee.imgursearch.Util.Util;
 import com.example.sanghoonlee.imgursearch.View.AutofitRecyclerView;
 import com.example.sanghoonlee.imgursearch.View.MarginDecoration;
 
-public class ImageSearchFragment extends Fragment {
+import org.w3c.dom.Text;
+
+public class ImageSearchFragment extends Fragment implements ImgurSearchable{
 
     public static final String TAG = "ImageSearchFragment";
 
     private EditText        mSearchInput;
     private AutofitRecyclerView mRecyclerView;
     private ListView        mHistoryListView;
+    private TextView        mNoResultTextView;
 
     private ImgurClient     mImgur;
     private View            mLayout;
@@ -75,16 +80,6 @@ public class ImageSearchFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
         mHistoryDBAdapter.close();
@@ -96,9 +91,10 @@ public class ImageSearchFragment extends Fragment {
     }
 
     private void initView() {
-        mSearchInput        = (EditText)mLayout.findViewById(R.id.search_input);
+        mSearchInput        = (EditText) mLayout.findViewById(R.id.search_input);
         mHistoryListView    = (ListView) mLayout.findViewById(R.id.search_history);
         mRecyclerView       = (AutofitRecyclerView) mLayout.findViewById(R.id.search_result);
+        mNoResultTextView   = (TextView) mLayout.findViewById(R.id.no_result);
     }
 
     private void initOp() {
@@ -170,28 +166,12 @@ public class ImageSearchFragment extends Fragment {
     public void initRecyclerViewOp() {
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setHasFixedSize(true);
-        mAdapter = new ImageSearchResultAdapter(getActivity());
+        mAdapter = new ImageSearchResultAdapter(getActivity(), this);
         mRecyclerView.setAdapter(mAdapter);
         mImgur.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(new MarginDecoration(getActivity()));
         //listen for scroll event to load more images
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-
-                //TODO: cancel request when user scrolls
-                //*************************************
-                if (newState == RecyclerView.SCROLL_STATE_IDLE ||
-                        newState == RecyclerView.SCROLL_STATE_DRAGGING ||
-                        newState == RecyclerView.SCROLL_STATE_SETTLING) {
-
-//                    mPicasso.resumeTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
-                } else {
-//                    mPicasso.cancelTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
-                }
-            }
-
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
@@ -200,7 +180,7 @@ public class ImageSearchFragment extends Fragment {
                 int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
                 int lastVisibleItem = ((GridLayoutManager) mRecyclerView.getLayoutManager())
                         .findLastVisibleItemPosition();
-                if (!mImgur.mIsLoading && totalItemCount <= (lastVisibleItem + 10)) {
+                if (!mImgur.mIsLoading && totalItemCount <= (lastVisibleItem + 1)) {
                     mImgur.searchImage(mCurrentSearchString);
                 }
             }
@@ -252,4 +232,29 @@ public class ImageSearchFragment extends Fragment {
         void onImageSelected(ImageData data);
     }
 
+    @Override
+    public void onNoMoreResult() {
+        //show toast when there is no more images to load
+        Toast.makeText(getActivity(), R.string.imgur_no_more_images, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onResultFound() {
+        mNoResultTextView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onNoResultFound() {
+        mNoResultTextView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onLoading() {
+
+    }
+
+    @Override
+    public void onFinishLoading() {
+
+    }
 }

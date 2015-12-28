@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.example.sanghoonlee.imgursearch.Controller.ImgurSearchable;
 import com.example.sanghoonlee.imgursearch.Model.Imgur.ImageData;
 import com.example.sanghoonlee.imgursearch.R;
 import com.example.sanghoonlee.imgursearch.View.SquareImageView;
@@ -24,15 +25,14 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchRe
 
     public static final String TAG  = "SearchResultAdapter";
 
-    //used to resume, pause, cancel picasso request
-    public static final String IMAGE_RESULT_TAG = "ImageResultTag";
-
     private List<ImageData> mImageDatas;
     private Context mContext;
+    private ImgurSearchable mImgurSearchable;
 
-    public ImageSearchResultAdapter(Context context) {
+    public ImageSearchResultAdapter(Context context, ImgurSearchable searchable) {
         this.mImageDatas = new ArrayList<>();
         mContext = context;
+        mImgurSearchable = searchable;
     }
 
     @Override
@@ -46,6 +46,9 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchRe
     public synchronized void addImageData(List<ImageData> models) {
         mImageDatas.addAll(models);
         notifyDataSetChanged();
+        if(models.isEmpty()) {
+            mImgurSearchable.onNoMoreResult();
+        }
     }
 
     @Override
@@ -53,6 +56,11 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchRe
         mImageDatas.clear();
         mImageDatas.addAll(models);
         notifyDataSetChanged();
+        if(mImageDatas.isEmpty()) {
+            mImgurSearchable.onNoResultFound();
+        } else {
+            mImgurSearchable.onResultFound();
+        }
     }
 
     public ImageData getItemAt(int position) {
