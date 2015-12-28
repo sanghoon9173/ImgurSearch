@@ -180,7 +180,10 @@ public class ImageSearchFragment extends Fragment implements ImgurSearchable{
                 int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
                 int lastVisibleItem = ((GridLayoutManager) mRecyclerView.getLayoutManager())
                         .findLastVisibleItemPosition();
-                if (!mImgur.mIsLoading && totalItemCount <= (lastVisibleItem + 1)) {
+                int firstVisibleItem = ((GridLayoutManager) mRecyclerView.getLayoutManager())
+                        .findFirstVisibleItemPosition();
+                if (!mImgur.mIsLoading && totalItemCount <= (lastVisibleItem + 1) &&
+                        firstVisibleItem!=0) {
                     mImgur.searchImage(mCurrentSearchString);
                 }
             }
