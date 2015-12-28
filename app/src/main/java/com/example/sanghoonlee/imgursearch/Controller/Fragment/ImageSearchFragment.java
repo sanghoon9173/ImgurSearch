@@ -28,7 +28,6 @@ import com.example.sanghoonlee.imgursearch.R;
 import com.example.sanghoonlee.imgursearch.Util.Util;
 import com.example.sanghoonlee.imgursearch.View.AutofitRecyclerView;
 import com.example.sanghoonlee.imgursearch.View.MarginDecoration;
-import com.squareup.picasso.Picasso;
 
 public class ImageSearchFragment extends Fragment {
 
@@ -46,7 +45,6 @@ public class ImageSearchFragment extends Fragment {
     private RecyclerItemClickListener mImageClickListener;
     private SearchHistoryAdapter mHistoryAdapter;
     private SearchHistoryDBAdapter mHistoryDBAdapter;
-    private Picasso         mPicasso;
 
 
     public ImageSearchFragment() {
@@ -60,8 +58,6 @@ public class ImageSearchFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //create picasso instance
-        mPicasso = Picasso.with(getActivity());
         //create db manager
         mHistoryDBAdapter = new SearchHistoryDBAdapter(getActivity());
         mHistoryDBAdapter.open();
@@ -81,13 +77,11 @@ public class ImageSearchFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        mPicasso.resumeTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        mPicasso.pauseTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
     }
 
     @Override
@@ -99,7 +93,6 @@ public class ImageSearchFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mPicasso.cancelTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
     }
 
     private void initView() {
@@ -193,9 +186,9 @@ public class ImageSearchFragment extends Fragment {
                         newState == RecyclerView.SCROLL_STATE_DRAGGING ||
                         newState == RecyclerView.SCROLL_STATE_SETTLING) {
 
-                    mPicasso.resumeTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
+//                    mPicasso.resumeTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
                 } else {
-                    mPicasso.cancelTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
+//                    mPicasso.cancelTag(ImageSearchResultAdapter.IMAGE_RESULT_TAG);
                 }
             }
 

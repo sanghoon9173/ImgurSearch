@@ -2,17 +2,15 @@ package com.example.sanghoonlee.imgursearch.Controller.Adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.sanghoonlee.imgursearch.Model.Imgur.ImageData;
 import com.example.sanghoonlee.imgursearch.R;
 import com.example.sanghoonlee.imgursearch.View.SquareImageView;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,23 +63,13 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchRe
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
         //TODO: fix dimension for different size screens
         ImageData imageData = mImageDatas.get(position);
-        Picasso.with(mContext)
+        Glide.with(viewHolder.itemView.getContext())
                 .load(imageData.url)
-                .fit()
-                .tag(IMAGE_RESULT_TAG)
+                .asBitmap()
+                .thumbnail(0.5f)
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
                 .centerCrop()
-                .into(viewHolder.mThumbnail, new Callback() {
-                    @Override
-                    public void onSuccess() {
-
-                    }
-
-                    @Override
-                    public void onError() {
-                        Log.i(TAG,"picasso image loading failed");
-                        //may want to do some UI work to show error
-                    }
-                });
+                .into(viewHolder.mThumbnail);
     }
 
     @Override

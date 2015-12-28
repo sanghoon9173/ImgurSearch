@@ -5,8 +5,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.example.sanghoonlee.imgursearch.R;
-import com.squareup.picasso.Picasso;
 
 public class MainImageActivity extends AppCompatActivity {
     public static final String IMAGE_URL_EXTRA = "IMAGEURL";
@@ -20,12 +20,7 @@ public class MainImageActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String url = intent.getStringExtra(IMAGE_URL_EXTRA);
         mMainImage = (ImageView)findViewById(R.id.main_image);
-        Picasso.with(this.getApplicationContext())
-                .load(url)
-                .noPlaceholder()
-                .priority(Picasso.Priority.HIGH)
-                .fit()
-                .into(mMainImage);
+        Glide.with(this).load(url).into(mMainImage);
     }
 
 }
