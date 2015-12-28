@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -20,14 +21,17 @@ import java.util.List;
  * Created by sanghoonlee on 2015-12-10.
  */
 
-public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchResultAdapter.ViewHolder>
+public class ImageSearchResultAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                                                                     implements ImgurClientAdapter{
 
-    public static final String TAG  = "SearchResultAdapter";
+    public static final String  TAG          = "SearchResultAdapter";
+    public static final int     VIEW_TYPE_PROGRESSBAR = 0;
+    public static final int     VIEW_TYPE_ITEM        = 1;
 
     private List<ImageData> mImageDatas;
     private Context mContext;
     private ImgurSearchable mImgurSearchable;
+    private boolean isFooterEnabled = false;
 
     public ImageSearchResultAdapter(Context context, ImgurSearchable searchable) {
         this.mImageDatas = new ArrayList<>();
@@ -36,9 +40,17 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchRe
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_grid_view, null);
-        ViewHolder viewHolder = new ViewHolder(view);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        RecyclerView.ViewHolder viewHolder;
+        if(viewType== VIEW_TYPE_ITEM) {
+            View view = LayoutInflater.from(
+                    viewGroup.getContext()).inflate(R.layout.item_grid_view, null);
+            viewHolder = new ImageViewHolder(view);
+        }else {
+            View view = LayoutInflater.from(
+                    viewGroup.getContext()).inflate(R.layout.progress_bar, viewGroup, false);
+            viewHolder = new ProgressViewHolder(view);
+        }
         return viewHolder;
     }
 
@@ -49,6 +61,11 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchRe
         if(models.isEmpty()) {
             mImgurSearchable.onNoMoreResult();
         }
+    }
+
+    public void enableFooter(boolean isEnabled){
+        this.isFooterEnabled = isEnabled;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -68,28 +85,44 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<ImageSearchRe
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        //TODO: fix dimension for different size screens
-        ImageData imageData = mImageDatas.get(position);
-        Glide.with(viewHolder.itemView.getContext())
-                .load(imageData.url)
-                .asBitmap()
-                .thumbnail(0.5f)
-                .diskCacheStrategy(DiskCacheStrategy.RESULT)
-                .centerCrop()
-                .into(viewHolder.mThumbnail);
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if(holder instanceof ProgressViewHolder){
+            ((ProgressViewHolder)holder).progressBar.setIndeterminate(true);
+        } else if(mImageDatas.size() > 0 && position < mImageDatas.size()) {
+            ImageViewHolder viewHolder = ((ImageViewHolder)holder);
+            ImageData imageData = mImageDatas.get(position);
+            Glide.with(viewHolder.itemView.getContext())
+                    .load(imageData.url)
+                    .asBitmap()
+                    .thumbnail(0.5f)
+                    .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                    .centerCrop()
+                    .into(viewHolder.mThumbnail);
+        }
     }
 
     @Override
     public int getItemCount() {
-        return (null != mImageDatas ? mImageDatas.size() : 0);
+        return  (isFooterEnabled) ? mImageDatas.size() + 1 : mImageDatas.size();
+    }
+    @Override
+    public int getItemViewType(int position) {
+        return (isFooterEnabled && position >= mImageDatas.size() ) ? VIEW_TYPE_PROGRESSBAR : VIEW_TYPE_ITEM;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ImageViewHolder extends RecyclerView.ViewHolder {
         public SquareImageView mThumbnail;
-        public ViewHolder(View parent) {
+        public ImageViewHolder(View parent) {
             super(parent);
             mThumbnail = (SquareImageView) parent.findViewById(R.id.img_thumbnail);
+        }
+    }
+
+    public static class ProgressViewHolder extends RecyclerView.ViewHolder {
+        public ProgressBar progressBar;
+        public ProgressViewHolder(View parent) {
+            super(parent);
+            progressBar = (ProgressBar) parent.findViewById(R.id.loading_progress_bar);
         }
     }
 }

@@ -29,10 +29,12 @@ public class ImgurClient {
     private Context mContext;
     private ImageSearchResultAdapter mAdapter;
     private String mCurrentSearchString;
+    private ImgurSearchable mImgurSearchable;
 
 
-    public ImgurClient(Context context) {
+    public ImgurClient(Context context, ImgurSearchable searchable) {
         mContext = context;
+        mImgurSearchable = searchable;
         mIsLoading = false;
         mHasReachedLast = false;
         mPageNumber = -1;
@@ -45,6 +47,7 @@ public class ImgurClient {
     public void searchImage(String searchString) {
         if (canSearch(searchString) && !mIsLoading) {
             mIsLoading = true;
+            mImgurSearchable.onLoading();
             mCurrentSearchString = searchString;
             ServiceGenerator.createService(ImageSearchService.class, RestConfig.IMGUR_API)
                     .listDefaultImageData(++mPageNumber, searchString).enqueue(new Callback<List<ImageData>>() {
@@ -58,6 +61,7 @@ public class ImgurClient {
                         mHasReachedLast=true;
                     }
                     mIsLoading = false;
+                    mImgurSearchable.onFinishLoading();
                 }
 
                 @Override
@@ -66,6 +70,7 @@ public class ImgurClient {
                     Log.i("restCall failure", t.toString());
                     DialogFactory.createDialog(mContext, DialogFactory.NETWORK_ERROR_DIALOG).show();
                     mIsLoading = false;
+                    mImgurSearchable.onFinishLoading();
                 }
             });
         }
@@ -104,7 +109,4 @@ public class ImgurClient {
             mAdapter.addImageData(imageDatas);
         }
     }
-
-
-
 }

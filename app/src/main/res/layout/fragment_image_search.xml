@@ -28,7 +28,6 @@
             android:imeOptions="actionSearch" >
         </EditText>
     </LinearLayout>
-
     <com.example.sanghoonlee.imgursearch.View.AutofitRecyclerView
         android:id="@+id/search_result"
         android:layout_width="match_parent"
@@ -39,7 +38,6 @@
         android:rowHeight = "150dp"
         android:background="@color/colorLightGrey"
         android:clipToPadding="false"/>
-
     <TextView
         android:id="@+id/no_result"
         android:layout_width="wrap_content"

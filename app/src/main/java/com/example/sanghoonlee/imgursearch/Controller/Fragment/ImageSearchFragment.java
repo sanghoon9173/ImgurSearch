@@ -67,7 +67,7 @@ public class ImageSearchFragment extends Fragment implements ImgurSearchable{
         mHistoryDBAdapter = new SearchHistoryDBAdapter(getActivity());
         mHistoryDBAdapter.open();
         //create imgur client
-        mImgur = new ImgurClient(getActivity());
+        mImgur = new ImgurClient(getActivity(), this);
     }
 
     @Override
@@ -138,7 +138,7 @@ public class ImageSearchFragment extends Fragment implements ImgurSearchable{
         mSearchInput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus) {
+                if (hasFocus) {
                     mHistoryListView.setVisibility(View.VISIBLE);
                 } else {
                     mHistoryListView.setVisibility(View.GONE);
@@ -185,6 +185,22 @@ public class ImageSearchFragment extends Fragment implements ImgurSearchable{
                 if (!mImgur.mIsLoading && totalItemCount <= (lastVisibleItem + 1) &&
                         firstVisibleItem!=0) {
                     mImgur.searchImage(mCurrentSearchString);
+                }
+            }
+        });
+
+        //adjust progress bar span
+        ((GridLayoutManager) mRecyclerView.getLayoutManager()).setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                int maxSpan = ((GridLayoutManager) mRecyclerView.getLayoutManager()).getSpanCount();
+                switch (mAdapter.getItemViewType(position)) {
+                    case ImageSearchResultAdapter.VIEW_TYPE_ITEM:
+                        return 1;
+                    case ImageSearchResultAdapter.VIEW_TYPE_PROGRESSBAR:
+                        return maxSpan;
+                    default:
+                        return -1;
                 }
             }
         });
@@ -253,11 +269,11 @@ public class ImageSearchFragment extends Fragment implements ImgurSearchable{
 
     @Override
     public void onLoading() {
-
+        mAdapter.enableFooter(true);
     }
 
     @Override
     public void onFinishLoading() {
-
+        mAdapter.enableFooter(false);
     }
 }
