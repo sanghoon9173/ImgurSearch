@@ -49,6 +49,7 @@ public class ImageFragment extends Fragment {
                 .load(mImageData.url)
                 .asBitmap()
                 .fitCenter()
+                .placeholder(R.mipmap.ic_launcher)
                 .diskCacheStrategy(DiskCacheStrategy.RESULT)
                 .skipMemoryCache(true)
                 .thumbnail(0.1f)
