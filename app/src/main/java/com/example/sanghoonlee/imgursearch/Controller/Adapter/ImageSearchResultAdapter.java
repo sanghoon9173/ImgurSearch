@@ -61,6 +61,11 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<RecyclerView.
         if(models.isEmpty()) {
             mImgurSearchable.onNoMoreResult();
         }
+        if(mImageDatas.isEmpty()) {
+            mImgurSearchable.onNoResultFound();
+        } else {
+            mImgurSearchable.onResultFound();
+        }
     }
 
     public void enableFooter(boolean isEnabled){
@@ -69,15 +74,9 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<RecyclerView.
     }
 
     @Override
-    public synchronized void resetImageData(List<ImageData> models) {
+    public synchronized void resetImageData() {
         mImageDatas.clear();
-        mImageDatas.addAll(models);
         notifyDataSetChanged();
-        if(mImageDatas.isEmpty()) {
-            mImgurSearchable.onNoResultFound();
-        } else {
-            mImgurSearchable.onResultFound();
-        }
     }
 
     public ImageData getItemAt(int position) {

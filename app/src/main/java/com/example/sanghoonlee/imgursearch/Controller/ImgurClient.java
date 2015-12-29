@@ -46,8 +46,7 @@ public class ImgurClient {
 
     public void searchImage(String searchString) {
         if (canSearch(searchString) && !mIsLoading) {
-            mIsLoading = true;
-            mImgurSearchable.onLoading();
+            onstartSearch();
             mCurrentSearchString = searchString;
             ServiceGenerator.createService(ImageSearchService.class, RestConfig.IMGUR_API)
                     .listDefaultImageData(++mPageNumber, searchString).enqueue(new Callback<List<ImageData>>() {
@@ -76,6 +75,13 @@ public class ImgurClient {
         }
     }
 
+    private void onstartSearch() {
+        mIsLoading = true;
+        if(mIsNewSearch) {
+            mAdapter.resetImageData();
+        }
+        mImgurSearchable.onLoading();
+    }
 
     private boolean canSearch(String searchString) {
         mIsNewSearch= (mCurrentSearchString==null || mCurrentSearchString!=searchString);
@@ -103,10 +109,7 @@ public class ImgurClient {
             if(data.isAlbum)
                 it.remove();
         }
-        if(mIsNewSearch) {
-            mAdapter.resetImageData(imageDatas);
-        } else {
-            mAdapter.addImageData(imageDatas);
-        }
+        mAdapter.addImageData(imageDatas);
+
     }
 }
