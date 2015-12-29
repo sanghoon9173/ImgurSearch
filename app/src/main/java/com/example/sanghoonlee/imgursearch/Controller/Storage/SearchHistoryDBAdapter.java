@@ -11,8 +11,10 @@ import java.util.List;
 
 /**
  * Created by sanghoonlee on 2015-12-17.
- * use FTS3 Virtual Table for fast searches
+ * can change to use FTS3 Virtual Table for fast searches
  * trade off: search by words not by character
+ *
+ * check commit history
  */
 public class SearchHistoryDBAdapter {
 
@@ -21,8 +23,9 @@ public class SearchHistoryDBAdapter {
     private static final String DATABASE_NAME   = "Image_search_history";
     private static final String TABLE_NAME      = "Imgur_Image_search_history";
     private static final String COLUMN_NAME     = "searchString";
-    private static final String TABLE_CREATE    = "CREATE VIRTUAL TABLE " + TABLE_NAME +
-                                                    " USING fts3(" + COLUMN_NAME +");";
+    private static final String COLUMN_ID       = "id";
+    private static final String TABLE_CREATE    = "CREATE TABLE " + TABLE_NAME + "("
+                                    + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT)";
     private static final String TAG             = "SearchHistoryDBAdapter";
     private PersistenceHelper mPersistenceHelper;
     private SQLiteDatabase mDatabase;
@@ -41,11 +44,11 @@ public class SearchHistoryDBAdapter {
     }
 
     public void close() {
-        //close the db
+        //close db
         if(mDatabase!=null) {
             mDatabase.close();
         }
-        //close the dbHelper
+        //close dbHelper
         if (mPersistenceHelper != null) {
             mPersistenceHelper.close();
         }
@@ -65,17 +68,16 @@ public class SearchHistoryDBAdapter {
         List<String> list = new ArrayList<>();
 
         String selectQuery = "SELECT  * FROM " + TABLE_NAME;
-        //selectQuery,selectedArguments
         Cursor cursor = mDatabase.rawQuery(selectQuery, null);
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
                 //adding 2nd column data
-                list.add(cursor.getString(0));
+                list.add(cursor.getString(1));
             } while (cursor.moveToNext());
         }
-        // close connection
+        // close cursor
         cursor.close();
         return list;
     }
@@ -86,9 +88,14 @@ public class SearchHistoryDBAdapter {
         if(query.isEmpty()) {
             return getSearchHistory();
         }
-        String selectQuery = "SELECT  * FROM " + TABLE_NAME+ " WHERE " + TABLE_NAME+ " MATCH '"
-                                + query +"';";
-        Cursor cursor = mDatabase.rawQuery(selectQuery, null);
+        String[] queryStrings = query.split(" ");
+        StringBuffer sb = new StringBuffer("SELECT  ").append(COLUMN_NAME).append(" FROM ")
+                .append(TABLE_NAME).append(" WHERE ").append(COLUMN_NAME).append(" LIKE '%")
+                .append(queryStrings[0]).append("%'");
+        for (int i=1; i<queryStrings.length;i++) {
+            sb.append(" AND ").append(COLUMN_NAME).append(" LIKE '%").append(queryStrings[i]).append("%'");
+        }
+        Cursor cursor = mDatabase.rawQuery(sb.toString(), null);
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
@@ -97,7 +104,7 @@ public class SearchHistoryDBAdapter {
                 list.add(cursor.getString(0));
             } while (cursor.moveToNext());
         }
-        // close connection
+        // close cursor
         cursor.close();
         return list;
     }
@@ -113,8 +120,9 @@ public class SearchHistoryDBAdapter {
         Cursor cursor = mDatabase.rawQuery(selectQuery, null);
         boolean contains = cursor.getCount()>0;
 
-        // close connection
+        // close cursor
         cursor.close();
         return contains;
     }
+
 }
