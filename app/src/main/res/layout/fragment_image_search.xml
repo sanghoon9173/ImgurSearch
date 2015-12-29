@@ -25,7 +25,7 @@
             android:paddingStart="6dp"
             android:paddingEnd="6dp"
             android:background="@null"
-            android:imeOptions="actionSearch" >
+            android:imeOptions="actionSearch|flagNoExtractUi">
         </EditText>
     </LinearLayout>
     <com.example.sanghoonlee.imgursearch.View.AutofitRecyclerView
