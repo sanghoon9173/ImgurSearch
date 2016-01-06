@@ -8,5 +8,7 @@
     <string name="img_content_description">Image</string>
     <string name="imgur_no_matching_result">No matching result</string>
     <string name="imgur_no_more_images">No more images to load</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_search">ImgurSearch</string>
 
 </resources>

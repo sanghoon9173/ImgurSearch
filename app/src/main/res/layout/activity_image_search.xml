@@ -6,34 +6,18 @@
     android:layout_height="match_parent"
     android:focusable="true"
     android:focusableInTouchMode="true">
-
-    <LinearLayout
-        android:id="@+id/search_area"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:orientation="horizontal">
-        <EditText
-            android:id="@+id/search_input"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10"
-            android:hint="@string/imgur_search_hint"
-            android:inputType="text"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
-            android:background="@null"
-            android:imeOptions="actionSearch|flagNoExtractUi">
-        </EditText>
-    </LinearLayout>
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:layout_alignParentTop="true"/>
     <com.example.sanghoonlee.imgursearch.View.AutofitRecyclerView
         android:id="@+id/search_result"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/search_area"
+        android:layout_below="@id/toolbar"
         android:padding="8dp"
         android:columnWidth="150dp"
         android:rowHeight = "150dp"
@@ -52,7 +36,7 @@
         android:layout_width="fill_parent"
         android:divider="@null"
         android:background="@color/colorWhite"
-        android:layout_below="@id/search_area"
+        android:layout_below="@id/toolbar"
         android:dividerHeight="0dp"
         android:layout_height="wrap_content"
         android:visibility="gone">
