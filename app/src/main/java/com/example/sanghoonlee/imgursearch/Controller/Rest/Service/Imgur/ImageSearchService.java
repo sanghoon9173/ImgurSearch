@@ -18,16 +18,19 @@ public interface ImageSearchService {
     //sorted by upload date
     @Headers({"Authorization: Client-ID "+ RestConfig.IMGUR_CLIENT_ID})
     @GET("/3/gallery/search/{page}")
-    Call<List<ImageData>> listDefaultImageData(@Path("page") int pagenumber, @Query("q") String search);
+    Call<List<ImageData>> listDefaultImageData(@Path("page") int pagenumber,
+       @Query("q_type") String type, @Query("q_any") String search, @Query("q_size_px") String size);
 
     //sorted by view count
     @Headers({"Authorization: Client-ID "+ RestConfig.IMGUR_CLIENT_ID})
     @GET("/3/gallery/search/top/{page}")
-    Call<List<ImageData>> listTopImageData(@Path("page") int pagenumber, @Query("q") String search);
+    Call<List<ImageData>> listTopImageData(@Path("page") int pagenumber,
+       @Query("q_type") String type, @Query("q_any") String search, @Query("q_size_px") String size);
 
     //osrted by viral content
     @Headers({"Authorization: Client-ID "+ RestConfig.IMGUR_CLIENT_ID})
     @GET("/3/gallery/search/viral{page}")
-    Call<List<ImageData>> listViralImageData(@Path("page") int pagenumber, @Query("q") String search);
+    Call<List<ImageData>> listViralImageData(@Path("page") int pagenumber,
+     @Query("q_type") String type, @Query("q_any") String search, @Query("q_size_px") String size);
 
 }

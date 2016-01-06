@@ -94,7 +94,7 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<RecyclerView.
                     .load(imageData.url)
                     .asBitmap()
                     .thumbnail(0.5f)
-                    .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .centerCrop()
                     .into(viewHolder.mThumbnail);
         }

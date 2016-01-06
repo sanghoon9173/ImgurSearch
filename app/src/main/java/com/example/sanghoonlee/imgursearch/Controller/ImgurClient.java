@@ -49,7 +49,7 @@ public class ImgurClient {
             onstartSearch();
             mCurrentSearchString = searchString;
             ServiceGenerator.createService(ImageSearchService.class, RestConfig.IMGUR_API)
-                    .listDefaultImageData(++mPageNumber, searchString).enqueue(new Callback<List<ImageData>>() {
+                    .listDefaultImageData(++mPageNumber, "jpg",searchString, "small").enqueue(new Callback<List<ImageData>>() {
                 @Override
                 public void onResponse(Response<List<ImageData>> response, Retrofit retrofit) {
                     if(response.body()==null) {

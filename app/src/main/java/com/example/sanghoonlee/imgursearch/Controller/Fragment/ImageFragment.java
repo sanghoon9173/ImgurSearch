@@ -50,7 +50,7 @@ public class ImageFragment extends Fragment {
                 .asBitmap()
                 .fitCenter()
                 .placeholder(R.mipmap.ic_launcher)
-                .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .skipMemoryCache(true)
                 .thumbnail(0.1f)
                 .priority(Priority.IMMEDIATE)
