@@ -42,7 +42,6 @@ public class ImageSearchActivity extends AppCompatActivity implements ImgurSearc
     private ImgurClient mImgur;
     private ImageSearchResultAdapter mAdapter;
     private String mCurrentSearchString;
-    private RecyclerItemClickListener mImageClickListener;
     private SearchHistoryAdapter mHistoryAdapter;
     private SearchHistoryDBAdapter mHistoryDBAdapter;
 
@@ -200,8 +199,7 @@ public class ImageSearchActivity extends AppCompatActivity implements ImgurSearc
         });
 
         //set on item click listener
-        mImageClickListener =   new RecyclerItemClickListener(
-                this,
+        mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this,
                 new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
@@ -209,8 +207,7 @@ public class ImageSearchActivity extends AppCompatActivity implements ImgurSearc
                                 ImageSearchActivity.this, mAdapter.getItemAt(position));
                         startActivity(intent);
                     }
-                });
-        mRecyclerView.addOnItemTouchListener(mImageClickListener);
+                }));
 
     }
 
