@@ -12,6 +12,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.sanghoonlee.imgursearch.Controller.ImgurSearchable;
 import com.example.sanghoonlee.imgursearch.Model.Imgur.ImageData;
 import com.example.sanghoonlee.imgursearch.R;
+import com.example.sanghoonlee.imgursearch.Util.Util;
 import com.example.sanghoonlee.imgursearch.View.SquareImageView;
 
 import java.util.ArrayList;
@@ -32,11 +33,14 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<RecyclerView.
     private Context mContext;
     private ImgurSearchable mImgurSearchable;
     private boolean isFooterEnabled = false;
+    private ImageHistoryAdapter mImageDB;
+    private String mSearchString;
 
     public ImageSearchResultAdapter(Context context, ImgurSearchable searchable) {
         this.mImageDatas = new ArrayList<>();
         mContext = context;
         mImgurSearchable = searchable;
+        mImageDB = new ImageHistoryAdapter(mContext);
     }
 
     @Override
@@ -55,7 +59,8 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<RecyclerView.
     }
 
     @Override
-    public synchronized void addImageData(List<ImageData> models) {
+    public synchronized void addImageData(List<ImageData> models, String searchString) {
+        mSearchString = searchString;
         mImageDatas.addAll(models);
         notifyDataSetChanged();
         if(models.isEmpty()) {
@@ -97,7 +102,16 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<RecyclerView.
                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .centerCrop()
                     .into(viewHolder.mThumbnail);
+            if(Util.isOnline(mContext)) {
+                addImageToDB(imageData.url);
+            }
         }
+    }
+
+    public synchronized void addImageToDB(String url) {
+        mImageDB.open();
+        mImageDB.addSearchHistory(mSearchString, url);
+        mImageDB.close();
     }
 
     @Override

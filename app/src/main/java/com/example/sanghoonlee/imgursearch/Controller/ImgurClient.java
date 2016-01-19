@@ -3,13 +3,16 @@ package com.example.sanghoonlee.imgursearch.Controller;
 import android.content.Context;
 import android.util.Log;
 
+import com.example.sanghoonlee.imgursearch.Controller.Adapter.ImageHistoryAdapter;
 import com.example.sanghoonlee.imgursearch.Controller.Adapter.ImageSearchResultAdapter;
 import com.example.sanghoonlee.imgursearch.Controller.Rest.RestConfig;
 import com.example.sanghoonlee.imgursearch.Controller.Rest.Service.Imgur.ImageSearchService;
 import com.example.sanghoonlee.imgursearch.Controller.Rest.ServiceGenerator;
 import com.example.sanghoonlee.imgursearch.Model.Imgur.ImageData;
 import com.example.sanghoonlee.imgursearch.Util.DialogFactory;
+import com.example.sanghoonlee.imgursearch.Util.Util;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,6 +33,7 @@ public class ImgurClient {
     private ImageSearchResultAdapter mAdapter;
     private String mCurrentSearchString;
     private ImgurSearchable mImgurSearchable;
+    private ImageHistoryAdapter mImageDB;
 
 
     public ImgurClient(Context context, ImgurSearchable searchable) {
@@ -38,6 +42,7 @@ public class ImgurClient {
         mIsLoading = false;
         mHasReachedLast = false;
         mPageNumber = -1;
+        mImageDB = new ImageHistoryAdapter(mContext);
     }
 
     public void setAdapter(ImageSearchResultAdapter adapter) {
@@ -48,30 +53,42 @@ public class ImgurClient {
         if (canSearch(searchString) && !mIsLoading) {
             onstartSearch();
             mCurrentSearchString = searchString;
-            ServiceGenerator.createService(ImageSearchService.class, RestConfig.IMGUR_API)
-                    .listDefaultImageData(++mPageNumber, "jpg",searchString, "small").enqueue(new Callback<List<ImageData>>() {
-                @Override
-                public void onResponse(Response<List<ImageData>> response, Retrofit retrofit) {
-                    if(response.body()==null) {
-                        return;
-                    }
-                    refreshAdapter(response.body());
-                    if(response.body().size()==0) {
-                        mHasReachedLast=true;
-                    }
-                    mIsLoading = false;
-                    mImgurSearchable.onFinishLoading();
+            if(!Util.isOnline(mContext)) {
+                List<ImageData> url = new ArrayList<>();
+                mImageDB.open();
+                for(String imageUrl:mImageDB.getSearchHistory(mCurrentSearchString)){
+                    url.add(new ImageData(imageUrl, false));
                 }
+                mImageDB.close();
+                mIsLoading = false;
+                mImgurSearchable.onFinishLoading();
+                refreshAdapter(url);
+            } else {
+                ServiceGenerator.createService(ImageSearchService.class, RestConfig.IMGUR_API)
+                        .listDefaultImageData(++mPageNumber, "jpg", searchString, "small").enqueue(new Callback<List<ImageData>>() {
+                    @Override
+                    public void onResponse(Response<List<ImageData>> response, Retrofit retrofit) {
+                        if (response.body() == null) {
+                            return;
+                        }
+                        refreshAdapter(response.body());
+                        if (response.body().size() == 0) {
+                            mHasReachedLast = true;
+                        }
+                        mIsLoading = false;
+                        mImgurSearchable.onFinishLoading();
+                    }
 
-                @Override
-                public void onFailure(Throwable t) {
-                    //TODO: Handle other errors
-                    Log.i("restCall failure", t.toString());
-                    DialogFactory.createDialog(mContext, DialogFactory.NETWORK_ERROR_DIALOG).show();
-                    mIsLoading = false;
-                    mImgurSearchable.onFinishLoading();
-                }
-            });
+                    @Override
+                    public void onFailure(Throwable t) {
+                        //TODO: Handle other errors
+                        Log.i("restCall failure", t.toString());
+                        DialogFactory.createDialog(mContext, DialogFactory.NETWORK_ERROR_DIALOG).show();
+                        mIsLoading = false;
+                        mImgurSearchable.onFinishLoading();
+                    }
+                });
+            }
         }
     }
 
@@ -109,7 +126,7 @@ public class ImgurClient {
             if(data.isAlbum)
                 it.remove();
         }
-        mAdapter.addImageData(imageDatas);
+        mAdapter.addImageData(imageDatas, mCurrentSearchString);
 
     }
 }

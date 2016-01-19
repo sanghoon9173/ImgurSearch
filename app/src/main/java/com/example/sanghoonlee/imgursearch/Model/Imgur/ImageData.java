@@ -13,6 +13,11 @@ public class ImageData extends Image{
     public int points;
     public int score;
 
+    public ImageData(String url, boolean isAlbum) {
+        this.url = url;
+        this.isAlbum = isAlbum;
+    }
+
     @SerializedName("comment_count")
     public int commentCount;
 

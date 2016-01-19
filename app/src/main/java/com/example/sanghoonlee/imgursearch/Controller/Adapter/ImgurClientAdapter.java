@@ -9,5 +9,5 @@ import java.util.List;
  */
 public interface ImgurClientAdapter {
     void resetImageData();
-    void addImageData(List<ImageData> models);
+    void addImageData(List<ImageData> models, String searchString);
 }
