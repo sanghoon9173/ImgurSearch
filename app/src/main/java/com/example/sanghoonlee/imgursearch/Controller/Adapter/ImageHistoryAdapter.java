@@ -54,12 +54,23 @@ public class ImageHistoryAdapter {
     }
 
     public void addSearchHistory(String searchString, String url){
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME, searchString);
-        values.put(COLUMN_IMG_URL, url);
+        if(!contains(url)) {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_NAME, searchString);
+            values.put(COLUMN_IMG_URL, url);
 
-        // Inserting Row
-        mDatabase.insert(TABLE_NAME, null, values);
+            // Inserting Row
+            mDatabase.insert(TABLE_NAME, null, values);
+        }
+    }
+
+    public boolean contains(String url) {
+        StringBuffer sb = new StringBuffer("SELECT *").append(" FROM ")
+                .append(TABLE_NAME).append(" WHERE ").append(COLUMN_IMG_URL).append(" = '")
+                .append(url).append("';");
+
+        Cursor cursor = mDatabase.rawQuery(sb.toString(), null);
+        return cursor.getCount()>0;
     }
 
     public List<String> getSearchHistory(String searchString){

@@ -34,6 +34,7 @@ public class ImgurClient {
     private String mCurrentSearchString;
     private ImgurSearchable mImgurSearchable;
     private ImageHistoryAdapter mImageDB;
+    private boolean mIsOnline;
 
 
     public ImgurClient(Context context, ImgurSearchable searchable) {
@@ -50,10 +51,12 @@ public class ImgurClient {
     }
 
     public void searchImage(String searchString) {
+        mIsOnline = Util.isOnline(mContext);
         if (canSearch(searchString) && !mIsLoading) {
             onstartSearch();
             mCurrentSearchString = searchString;
-            if(!Util.isOnline(mContext)) {
+            //fetch data from disk when offline
+            if(!mIsOnline) {
                 List<ImageData> url = new ArrayList<>();
                 mImageDB.open();
                 for(String imageUrl:mImageDB.getSearchHistory(mCurrentSearchString)){
@@ -63,7 +66,9 @@ public class ImgurClient {
                 mIsLoading = false;
                 mImgurSearchable.onFinishLoading();
                 refreshAdapter(url);
-            } else {
+            }
+            //call api if online
+            else {
                 ServiceGenerator.createService(ImageSearchService.class, RestConfig.IMGUR_API)
                         .listDefaultImageData(++mPageNumber, "jpg", searchString, "small").enqueue(new Callback<List<ImageData>>() {
                     @Override
@@ -109,14 +114,23 @@ public class ImgurClient {
             mHasReachedLast = false;
             return true;
         }
+
+        if(!mIsOnline) {
+            return false;
+        }
+
         //if the same search but can load more images then return true
-        else if(!mHasReachedLast) {
+        if(!mHasReachedLast) {
             return true;
         }
         //if the same search but already received all the images then return false
         else {
             return false;
         }
+    }
+
+    public void cleanUp(){
+        mAdapter.cleanUp();
     }
 
     private void refreshAdapter(List<ImageData> imageDatas) {

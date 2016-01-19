@@ -96,6 +96,7 @@ public class ImageSearchActivity extends AppCompatActivity implements ImgurSearc
     public void onDestroy() {
         super.onDestroy();
         mHistoryDBAdapter.close();
+        mImgur.cleanUp();
     }
 
     @Override

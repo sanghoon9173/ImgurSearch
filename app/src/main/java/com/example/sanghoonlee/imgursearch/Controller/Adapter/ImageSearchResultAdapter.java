@@ -41,6 +41,7 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<RecyclerView.
         mContext = context;
         mImgurSearchable = searchable;
         mImageDB = new ImageHistoryAdapter(mContext);
+        mImageDB.open();
     }
 
     @Override
@@ -98,7 +99,6 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<RecyclerView.
             Glide.with(viewHolder.itemView.getContext())
                     .load(imageData.url)
                     .asBitmap()
-                    .thumbnail(0.5f)
                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .centerCrop()
                     .into(viewHolder.mThumbnail);
@@ -109,8 +109,10 @@ public class ImageSearchResultAdapter extends RecyclerView.Adapter<RecyclerView.
     }
 
     public synchronized void addImageToDB(String url) {
-        mImageDB.open();
         mImageDB.addSearchHistory(mSearchString, url);
+    }
+
+    public void cleanUp() {
         mImageDB.close();
     }
 
